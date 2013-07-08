@@ -35,9 +35,9 @@ def true_random(raw_file, mutation_rate):
     return "".join([chr(number) for number in values])
 
 
-test = "this is a sentence"
-raw_file = [hex(ord(character)) for character in test]
+# test = open("sample_unicode").read()
+# raw_file = [hex(ord(character)) for character in test]
 
-print random_chunks(raw_file, 0.5, 0.25)
-print byte_jitter(raw_file, 0.25)
-print true_random(raw_file, 0.1)
+# print random_chunks(raw_file, 0.5, 0.25)
+# print byte_jitter(raw_file, 0.25)
+# print true_random(raw_file, 0.1)

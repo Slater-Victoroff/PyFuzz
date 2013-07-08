@@ -1,0 +1,110 @@
+import fuzzer
+import random
+import regex_inverter
+
+
+BYTE_STRING = lambda raw_file: [int(byte, 16) for byte in raw_file]
+
+
+def randomize(func):
+    def data_generator(*args, **kwargs):
+        result = func(*args, **kwargs)
+        randomization = kwargs.get("randomization", "byte_jitter")
+        if randomization == "byte_jitter":
+            result = fuzzer.byte_jitter(
+                result,
+                kwargs.get("mutation_rate", 0.1)
+            )
+
+        elif randomization == "random_chunks":
+            result = fuzzer.random_chunks(
+                result,
+                kwargs.get("mutation_rate", 0.1),
+                kwargs.get("mutation_magnitude", 0.1)
+            )
+        elif randomization == "true_random":
+            result = fuzzer.true_random(
+                result,
+                kwargs.get("mutation_rate", 0.1)
+            )
+        elif isinstance(result, list):
+            result = "".join(unichr(number) for number in result)
+        else:
+            result = "".join([chr(number) for number in BYTE_STRING(result)])
+        return result
+    return data_generator
+
+
+def scale(func):
+    def find_length(*args, **kwargs):
+        if kwargs.get("length", False):
+            length = kwargs["length"]
+        else:
+            length = random.randint(kwargs.get("min_length", 0), kwargs.get("max_length", 1000))
+        kwargs["length"] = length
+        return func(*args, **kwargs)
+    return find_length
+
+
+@randomize
+@scale
+def random_bytes(**kwargs):
+    if kwargs.get("seed", False):
+        data = [hex(ord(character)) for character in kwargs["seed"]]
+    else:
+        data = [hex(random.randint(0, 255)) for unit in range(0, kwargs["length"])]
+    return data
+
+
+@randomize
+@scale
+def random_ascii(**kwargs):
+    if kwargs.get("seed", False):
+        data = [hex(ord(character)) for character in kwargs["seed"]]
+    else:
+        data = [hex(random.randint(0, 127)) for unit in range(kwargs["length"])]
+    return data
+
+
+@randomize
+@scale
+def random_regex(**kwargs):
+    regex = kwargs.get("regex", ".")
+    charset = list(regex_inverter.ipermute(regex))
+    data = [hex(ord(random.choice(charset))) for unit in range(kwargs["length"])]
+    return data
+
+
+@randomize
+@scale
+def random_utf8(**kwargs):
+    utf_range = lambda start, end: list(range(start, end+1))
+    start_bytes = utf_range(0x00, 0x7F) + utf_range(0xC2, 0xF4)
+    body_bytes = utf_range(0x80, 0xBF)
+
+    def utf8_char():
+        start = random.choice(start_bytes)
+        if start <= 0x7F:
+            data = [start]
+        elif start <= 0xDF:
+            data = [start, random.choice(body_bytes)]
+        elif start == 0xE0:
+            data = [start, random.choice(utf_range(0xA0, 0xBF)), random.choice(body_bytes)]
+        elif start == 0xED:
+            data = [start, random.choice(utf_range(0x80, 0x9F)), random.choice(body_bytes)]
+        elif start <= 0xEF:
+            data = [start, random.choice(body_bytes), random.choice(body_bytes)]
+        elif start == 0xF0:
+            data = [start, random.choice(utf_range(0x90, 0xBF)), random.choice(body_bytes), random.choice(body_bytes)]
+        elif start <= 0xF3:
+            data = [start, random.choice(body_bytes), random.choice(body_bytes), random.choice(body_bytes)]
+        elif start == 0xF4:
+            data = [start, random.choice(utf_range(0x80, 0x8F)), random.choice(body_bytes), random.choice(body_bytes)]
+        return data
+    data = []
+    for i in range(kwargs["length"]):
+        data.append(sum(utf8_char()))
+    return data
+
+
+print random_utf8(regex="[a-zA-Z]", randomization="fake")
