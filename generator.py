@@ -1,6 +1,9 @@
 import fuzzer
 import random
 import regex_inverter
+import Image
+import numpy
+import StringIO
 
 
 BYTE_STRING = lambda raw_file: [int(byte, 16) for byte in raw_file]
@@ -9,7 +12,7 @@ BYTE_STRING = lambda raw_file: [int(byte, 16) for byte in raw_file]
 def randomize(func):
     def data_generator(*args, **kwargs):
         result = func(*args, **kwargs)
-        randomization = kwargs.get("randomization", "byte_jitter")
+        randomization = kwargs.get("randomization", None)
         if randomization == "byte_jitter":
             result = fuzzer.byte_jitter(
                 result,
@@ -44,6 +47,20 @@ def scale(func):
         kwargs["length"] = length
         return func(*args, **kwargs)
     return find_length
+
+
+def resolution(func):
+    def get_dimensions(*args, **kwargs):
+        if kwargs.get("width", False) and kwargs.get("height", False):
+            dims = (kwargs["width"], kwargs["height"])
+        elif kwargs.get("width", False) or kwargs.get("height", False):
+            dim = kwargs.get("width", kwargs["height"])
+            dims = (dim, dim)
+        else:
+            dims = (100, 100)
+        kwargs["dims"] = dims
+        return func(*args, **kwargs)
+    return get_dimensions
 
 
 @randomize
@@ -107,4 +124,15 @@ def random_utf8(**kwargs):
     return data
 
 
-print random_utf8(regex="[a-zA-Z]", randomization="fake")
+@resolution
+def random_image(**kwargs):
+    image_array = numpy.random.rand(kwargs["dims"][0], kwargs["dims"][1], 3)*255
+    image = Image.fromarray(image_array.astype('uint8')).convert('RGBA')
+    format = kwargs.get("format", "JPEG")
+    output = StringIO.StringIO()
+    image.save(output, format=format)
+    content = output.getvalue()
+    output.close()
+    return content
+
+print random_image(random_imageize="byte_jitter")
