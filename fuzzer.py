@@ -13,7 +13,7 @@ def random_chunks(raw_file, mutation_rate, mutation_magnitude):
             for j in range(0, 7):
                 if random.random() < mutation_magnitude:
                     values[i] ^= 1 << j
-    return "".join([chr(number) for number in values])
+    return values
 
 
 def byte_jitter(raw_file, mutation_rate):
@@ -22,7 +22,7 @@ def byte_jitter(raw_file, mutation_rate):
     for i in range(0, len(values)):
         if random.random() < mutation_rate:
             values[i] ^= random.randint(0, 16)
-    return "".join([chr(number) for number in values])
+    return values
 
 
 def true_random(raw_file, mutation_rate):
@@ -32,7 +32,7 @@ def true_random(raw_file, mutation_rate):
         for j in range(0, 7):
             if random.random() < mutation_rate:
                 values[i] ^= 1 << j
-    return "".join([chr(number) for number in values])
+    return values
 
 
 # test = open("sample_unicode").read()

@@ -4,9 +4,10 @@ import regex_inverter
 import Image
 import numpy
 import StringIO
-
+import binascii
 
 BYTE_STRING = lambda raw_file: [int(byte, 16) for byte in raw_file]
+IMAGE_STRING = lambda raw_file: [int(byte, 256) for byte in raw_file]
 
 
 def randomize(func):
@@ -30,11 +31,35 @@ def randomize(func):
                 result,
                 kwargs.get("mutation_rate", 0.1)
             )
-        elif isinstance(result, list):
-            result = "".join(unichr(number) for number in result)
         else:
-            result = "".join([chr(number) for number in BYTE_STRING(result)])
-        return result
+            result = BYTE_STRING(result)
+        return "".join([unichr(number) for number in result])
+    return data_generator
+
+
+def randomize_binary(func):
+    def data_generator(*args, **kwargs):
+        result = func(*args, **kwargs)
+        result = ["0x"+digit for digit in result]
+        randomization = kwargs.get("randomization", None)
+        if randomization == "byte_jitter":
+            result = fuzzer.byte_jitter(
+                result,
+                kwargs.get("mutation_rate", 0.1)
+            )
+
+        elif randomization == "random_chunks":
+            result = fuzzer.random_chunks(
+                result,
+                kwargs.get("mutation_rate", 0.1),
+                kwargs.get("mutation_magnitude", 0.1)
+            )
+        elif randomization == "true_random":
+            result = fuzzer.true_random(
+                result,
+                kwargs.get("mutation_rate", 0.1)
+            )
+        return "".join([binascii.unhexlify(char[2:]) for char in result])
     return data_generator
 
 
@@ -120,19 +145,26 @@ def random_utf8(**kwargs):
         return data
     data = []
     for i in range(kwargs["length"]):
-        data.append(sum(utf8_char()))
+        data.append(str(sum(utf8_char())))
     return data
 
 
+@randomize_binary
 @resolution
 def random_image(**kwargs):
     image_array = numpy.random.rand(kwargs["dims"][0], kwargs["dims"][1], 3)*255
     image = Image.fromarray(image_array.astype('uint8')).convert('RGBA')
-    format = kwargs.get("format", "JPEG")
+    format = kwargs.get("format", "PNG")
     output = StringIO.StringIO()
     image.save(output, format=format)
     content = output.getvalue()
     output.close()
+    content = [binascii.hexlify(char) for char in content]
     return content
 
-print random_image(random_imageize="byte_jitter")
+#print random_image(randomization="byte_jitter")
+with open("test.png", "wb") as dump:
+    dump.write(random_image())
+
+with open("fake.png", 'wb') as dump:
+    dump.write(random_image(randomizer="byte_jitter"))
