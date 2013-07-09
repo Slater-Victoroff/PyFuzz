@@ -5,6 +5,7 @@ import Image
 import numpy
 import StringIO
 import binascii
+import Image
 
 BYTE_STRING = lambda raw_file: [int(byte, 16) for byte in raw_file]
 IMAGE_STRING = lambda raw_file: [int(byte, 256) for byte in raw_file]
@@ -96,6 +97,34 @@ def resolution(func):
     return get_dimensions
 
 
+def randomize_image(func):
+    def get_image(*args, **kwargs):
+        try:
+            image = Image.open(kwargs["seed"])
+        except:
+            print "Seed must be a valid file"
+            raise
+        width, height = image.size
+
+        def change_pixel(color_tuple, location):
+            if image.mode == '1':
+                value = int(color_tuple[0] >= 127)
+            elif image.mode == 'L':
+                value = color_tuple[0]
+            else:
+                value = color_tuple
+            image.putpixel((location[0], location[1]), value)
+
+        for i in range(height):
+            for j in range(width):
+                if random.random() < kwargs.get("mutation_rate", 0.05):
+                    color_tuple = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 255)
+                    change_pixel(color_tuple, [i, j])
+        image.save(kwargs.get("output_file", "randomized.png"))
+        return "End"
+    return get_image
+
+
 @randomize
 @scale
 def random_bytes(**kwargs):
@@ -176,6 +205,10 @@ def random_image(**kwargs):
     return [binascii.hexlify(char) for char in content]
 
 
+@randomize_image
+def random_valid_image(**kwargs):
+    return None
+
 # print random_ascii(
 #     seed="this is a test", randomization="byte_jitter",
 #     mutation_rate=0.25
@@ -200,4 +233,6 @@ def random_image(**kwargs):
 #    dump.write(random_image(randomization="byte_jitter", height=300, width=500, mutation_rate=0))
 
 with open("randomLenna.png", "wb") as dump:
-    dump.write(random_image(seed="Lenna.png", randomization="true_random", mutation_rate=0.01))
+    dump.write("")
+
+random_valid_image(seed="Lenna.png", mutation_rate=0.1)
