@@ -41,6 +41,8 @@ def randomize_binary(func):
     def data_generator(*args, **kwargs):
         result = func(*args, **kwargs)
         result = ["0x"+digit for digit in result]
+        IDHC = BYTE_STRING(result[:14])
+        result = result[14:]
         randomization = kwargs.get("randomization", None)
         if randomization == "byte_jitter":
             result = fuzzer.byte_jitter(
@@ -59,7 +61,13 @@ def randomize_binary(func):
                 result,
                 kwargs.get("mutation_rate", 0.1)
             )
-        return "".join([binascii.unhexlify(char[2:]) for char in result])
+        else:
+            result = IDHC+result
+            result = [binascii.unhexlify(char[2:]) for char in result]
+        if kwargs.get("randomization", False):
+            result = IDHC+result
+            result = [binascii.unhexlify(hex(char)[2:].zfill(2)) for char in result]
+        return "".join(result)
     return data_generator
 
 
@@ -77,7 +85,7 @@ def scale(func):
 def resolution(func):
     def get_dimensions(*args, **kwargs):
         if kwargs.get("width", False) and kwargs.get("height", False):
-            dims = (kwargs["width"], kwargs["height"])
+            dims = (kwargs["height"], kwargs["width"])
         elif kwargs.get("width", False) or kwargs.get("height", False):
             dim = kwargs.get("width", kwargs["height"])
             dims = (dim, dim)
@@ -152,19 +160,44 @@ def random_utf8(**kwargs):
 @randomize_binary
 @resolution
 def random_image(**kwargs):
-    image_array = numpy.random.rand(kwargs["dims"][0], kwargs["dims"][1], 3)*255
-    image = Image.fromarray(image_array.astype('uint8')).convert('RGBA')
-    format = kwargs.get("format", "PNG")
-    output = StringIO.StringIO()
-    image.save(output, format=format)
-    content = output.getvalue()
-    output.close()
-    content = [binascii.hexlify(char) for char in content]
-    return content
+    if not kwargs.get("seed", False):
+        image_array = numpy.random.rand(kwargs["dims"][0], kwargs["dims"][1], 3)*255
+        image = Image.fromarray(image_array.astype('uint8')).convert('RGBA')
+        format = kwargs.get("format", "PNG")
+        output = StringIO.StringIO()
+        image.save(output, format=format)
+        content = output.getvalue()
+        output.close()
+    else:
+        try:
+            content = open(kwargs["seed"], "rb").read()
+        except:
+            content = kwargs["seed"]
+    return [binascii.hexlify(char) for char in content]
 
-#print random_image(randomization="byte_jitter")
-with open("test.png", "wb") as dump:
-    dump.write(random_image())
 
-with open("fake.png", 'wb') as dump:
-    dump.write(random_image(randomizer="byte_jitter"))
+# print random_ascii(
+#     seed="this is a test", randomization="byte_jitter",
+#     mutation_rate=0.25
+# )
+
+# print random_regex(
+#     length=20, regex="[a-zA-Z]"
+# )
+
+# print random_utf8(
+#     min_length=10,
+#     max_length=50
+# )
+
+#print random_bytes()
+#print random_utf8()
+#print random_regex(regex="[a-zA-Z]")
+# with open("test.png", "wb") as dump:
+#     dump.write(random_image())
+
+#with open("fake.png", 'wb') as dump:
+#    dump.write(random_image(randomization="byte_jitter", height=300, width=500, mutation_rate=0))
+
+with open("randomLenna.png", "wb") as dump:
+    dump.write(random_image(seed="Lenna.png", randomization="true_random", mutation_rate=0.01))
