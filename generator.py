@@ -260,7 +260,7 @@ def random_valid_image(**kwargs):
     return None
 
 
-print random_language(language="russian")
+# print random_language(language="russian")
 # print random_ascii(
 #     seed="this is a test", randomization="byte_jitter",
 #     mutation_rate=0.25
