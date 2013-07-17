@@ -5,10 +5,32 @@ import Image
 import numpy
 import StringIO
 import binascii
-import Image
+import requests
+import lxml.html
 
 BYTE_STRING = lambda raw_file: [int(byte, 16) for byte in raw_file]
 IMAGE_STRING = lambda raw_file: [int(byte, 256) for byte in raw_file]
+
+LANGUAGE_MAP = {
+    "chinese": "cn",
+    "chinese(han)": "cn",
+    "dutch": "nl",
+    "english": "en",
+    "finish": "fin",
+    "finnish": "fin",
+    "french": "fr",
+    "german": "de",
+    "greek": "el",
+    "herbrew": "il",
+    "italian": "it",
+    "japanese": "jp",
+    "latin": "ltn",
+    "polish": "pl",
+    "portugese": "pt",
+    "russian": "ru",
+    "serbian": "sr",
+    "spanish": "es"
+}
 
 
 def randomize(func):
@@ -154,6 +176,34 @@ def random_regex(**kwargs):
     return data
 
 
+@scale
+def random_language(**kwargs):
+    """Generates a short snippet of Lorem ipsum in a given language and samples it randomly.
+
+    Generation is done by http://randomtextgenerator.com. This is basically just accessing
+    what they've already done and modifying it for this application.
+    Currently supported languages are:
+    ["chinese(han)", "dutch", "english", "finnish", "french", "german", "greek", "hebrew",
+    "italian", "japanese", "latin", "polish", "portugese", "russian", "serbian", "spanish"]"""
+    base_url = "http://randomtextgenerator.com"
+    language = kwargs.get("language", "polish").lower().strip()
+    data = {"text_mode": "plain", "language": LANGUAGE_MAP.get(language, "pl")}
+    result = requests.post(base_url, data=data)._content
+    document = lxml.html.document_fromstring(result)
+    data = document.cssselect('textarea[id="generatedtext"]')[0].text
+    return data[:kwargs["length"]]
+    # Trying to get this work at lore-ipsum generator, but the scraping is difficult
+    # base_url = "http://generator.lorem-ipsum.info"
+    # language = kwargs.get("language", "polish").lower().strip()
+    # dummy_text = "Lorem ipsum dolor sit amet"
+    # data = {"other": language, "link_select": "Go"}
+    # data.update({
+    #     "language": "other", "radio": "num", "num": "5",
+    #     "Rhubarb": "Generate", "type": "plain", "limit": "1000",
+    #     "txt": dummy_text, "lang_old": "Latin"})
+    # print requests.post(base_url, data=data)._content
+
+
 @randomize
 @scale
 def random_utf8(**kwargs):
@@ -209,6 +259,8 @@ def random_image(**kwargs):
 def random_valid_image(**kwargs):
     return None
 
+
+print random_language(language="russian")
 # print random_ascii(
 #     seed="this is a test", randomization="byte_jitter",
 #     mutation_rate=0.25
@@ -232,7 +284,8 @@ def random_valid_image(**kwargs):
 #with open("fake.png", 'wb') as dump:
 #    dump.write(random_image(randomization="byte_jitter", height=300, width=500, mutation_rate=0))
 
-with open("randomLenna.png", "wb") as dump:
-    dump.write("")
+# with open("randomLenna.png", "wb") as dump:
+#     dump.write("")
 
-random_valid_image(seed="Lenna.png", mutation_rate=0.1)
+
+# random_valid_image(seed="Lenna.png", mutation_rate=0.1)
