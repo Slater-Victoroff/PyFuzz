@@ -1,4 +1,4 @@
-from py_fuzz import *
+from py_fuzz.generator import *
 
 print random_language(language="russian")
 print random_ascii(
