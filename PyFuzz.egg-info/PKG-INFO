@@ -1,0 +1,46 @@
+Metadata-Version: 1.0
+Name: PyFuzz
+Version: 0.1.0
+Summary: Simple fuzz testing for unit tests, i18n, and security
+Home-page: http://pypi.python.org/pypi/PyFuzz/
+Author: Slater Victoroff
+Author-email: Slater.R.Victoroff@gmail.com
+License: LICENSE.txt
+Description: ======
+        PyFuzz
+        ======
+        
+        PyFuzz is a simple light-weight library used for randomly generating a number of common file types.
+        
+        Examples can be found in examples/examples.py
+        
+        Current functions includes:
+        * ASCII
+        * UTF-8
+        * PNG
+        * JPG
+        * GIF
+        * A wide number of languages including Chinese(Han), Japanese, and Russian.
+        * Raw Bytes
+        * Regex-Specified String Groups
+        
+        Full Language List
+        ==================
+        * Chinese(han)
+        * Dutch
+        * English
+        * Finnish
+        * French
+        * German
+        * Greek
+        * Hebrew
+        * Italian
+        * Japanese
+        * Latin
+        * Polish
+        * Portugese
+        * Russian
+        * Serbian
+        * Spanish
+        
+Platform: UNKNOWN
