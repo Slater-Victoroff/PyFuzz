@@ -19,13 +19,11 @@ print random_bytes()
 print random_utf8()
 print random_regex(regex="[a-zA-Z]")
 with open("test.png", "wb") as dump:
-    dump.write(random_image())
+    dump.write(random_pseudo_image())
 
 with open("fake.png", 'wb') as dump:
-   dump.write(random_image(randomization="byte_jitter", height=300, width=500, mutation_rate=0))
+   dump.write(random_pseudo_image(randomization="byte_jitter", height=300, width=500, mutation_rate=0))
 
-with open("randomLenna.png", "wb") as dump:
-    dump.write("")
+random_image(seed="Lenna.png", mutation_rate=0.1)
 
-
-random_valid_image(seed="Lenna.png", mutation_rate=0.1)
+print random_item("utf8", length=20)

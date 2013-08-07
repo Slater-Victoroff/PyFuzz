@@ -32,7 +32,6 @@ LANGUAGE_MAP = {
     "spanish": "es"
 }
 
-
 def randomize(func):
     def data_generator(*args, **kwargs):
         result = func(*args, **kwargs)
@@ -238,7 +237,7 @@ def random_utf8(**kwargs):
 
 @randomize_binary
 @resolution
-def random_image(**kwargs):
+def random_pseudo_image(**kwargs):
     if not kwargs.get("seed", False):
         image_array = numpy.random.rand(kwargs["dims"][0], kwargs["dims"][1], 3)*255
         image = Image.fromarray(image_array.astype('uint8')).convert('RGBA')
@@ -256,5 +255,21 @@ def random_image(**kwargs):
 
 
 @randomize_image
-def random_valid_image(**kwargs):
+def random_image(**kwargs):
     return None
+
+def random_item(item_name, **kwargs):
+    """
+    Returns a random item of the specified type and passes all kwargs on to that constructor
+    """
+    VALUE_DICT = {
+        "bytes": random_bytes,
+        "ascii": random_ascii,
+        "regex": random_regex,
+        "language": random_language,
+        "utf8": random_utf8,
+        "utf_8": random_utf8,
+        "image": random_image,
+        "image_like": random_pseudo_image 
+    }
+    return VALUE_DICT[item_name](**kwargs)

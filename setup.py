@@ -5,7 +5,7 @@ except ImportError:
 
 setup(
     name="PyFuzz",
-    version="0.1.0",
+    version="0.1.1",
     author="Slater Victoroff",
     author_email="Slater.R.Victoroff@gmail.com",
     packages=["pyfuzz"],
@@ -16,6 +16,7 @@ setup(
     install_requires=[
         "lxml >= 2.3.2",
         "requests >= 1.2.3",
-        "numpy >= 1.6.1"
+        "numpy >= 1.6.1",
+        "cssselect >= 0.8"
     ],
 )

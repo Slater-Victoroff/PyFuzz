@@ -1,2 +1,2 @@
 v0.1.0, Tue Aug 6 -- Initial release.
-
+v0.1.1, Wed Aug 7 -- Added general random_item interface, updated some names and examples, and updated requirements
