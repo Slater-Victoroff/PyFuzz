@@ -18,6 +18,7 @@ print random_utf8(
 print random_bytes()
 print random_utf8()
 print random_regex(regex="[a-zA-Z]")
+
 with open("test.png", "wb") as dump:
     dump.write(random_pseudo_image())
 
@@ -27,3 +28,12 @@ with open("fake.png", 'wb') as dump:
 random_image(seed="Lenna.png", mutation_rate=0.1)
 
 print random_item("utf8", length=20)
+
+print random_document([
+    "one", "two",[
+        "three", "four",[
+            "five", "six"
+        ]
+    ]
+], "ascii", length=20)
+

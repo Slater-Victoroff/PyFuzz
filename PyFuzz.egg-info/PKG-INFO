@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: PyFuzz
-Version: 0.1.0
+Version: 0.1.2
 Summary: Simple fuzz testing for unit tests, i18n, and security
 Home-page: http://pypi.python.org/pypi/PyFuzz/
 Author: Slater Victoroff

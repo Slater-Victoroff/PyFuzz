@@ -5,7 +5,7 @@ except ImportError:
 
 setup(
     name="PyFuzz",
-    version="0.1.1",
+    version="0.1.2",
     author="Slater Victoroff",
     author_email="Slater.R.Victoroff@gmail.com",
     packages=["pyfuzz"],
