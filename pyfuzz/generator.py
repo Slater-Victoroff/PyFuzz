@@ -1,7 +1,7 @@
 import fuzzer
 import random
 import regex_inverter
-import Image
+from PIL import Image
 import numpy
 import StringIO
 import binascii
